@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ds-deployment
+  labels:
+    app: ds-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ds-app
+  template:
+    metadata:
+      labels:
+        app: ds-app
+    spec:
+      containers:
+      - name: web-app
+        image: dscharan2001/ds-project
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: http
+            containerPort: 8235
+        resources:
+          limits:
+            cpu: 0.2
+            memory: "200Mi"
+      - name: ds-postgres
+        image: "postgres:9.6-alpine"
+        imagePullPolicy: IfNotPresent
+        ports:
+          - containerPort: 5432
+        env:
+        - name: POSTGRES_DB
+          value: "LAB1DB"
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          value: "password"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ds-deploy-svc
+  labels:
+    app: ds-app
+spec:
+  type: LoadBalancer
+  selector:
+    app: ds-app
+  ports:
+  - name: http
+    #protocol: TCP
+    port: 8235
+    targetPort: 8235
+  - name: postgres-port
+    port: 5432
+    targetPort: 5432
